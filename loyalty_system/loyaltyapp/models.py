@@ -94,7 +94,7 @@ class Purchase(models.Model):
     total_points_earned = models.IntegerField(default=0)
     bill_no = models.CharField(max_length=50)
     points_redeemed = models.IntegerField(default=0)
-    expiration_date = models.DateField(default=timezone.now().date())
+    expiration_date = models.DateField()
     bill_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     # merchant = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='merchant_transactions')
 

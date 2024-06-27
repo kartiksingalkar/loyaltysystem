@@ -34,7 +34,7 @@ def purchase_view(request, shop_id):
         item = get_object_or_404(Item, id=item_id)
         total_price = item.price * quantity
         total_points_earned = item.loyalty_points * quantity
-
+        
         # Check and apply redeemable points
         if redeem_points > customer.active_points:
             redeem_points = customer.active_points
@@ -54,7 +54,7 @@ def purchase_view(request, shop_id):
             date=timezone.now(),
             bill_no='BILL123',
             bill_amount=total_price,
-            
+            expiration_date=expiration_date,
             
         )
 

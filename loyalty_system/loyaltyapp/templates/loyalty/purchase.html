@@ -4,7 +4,7 @@
 
 {% block content %}
     <h2>{{ shop.name }}</h2>
-    <form method="post" id="purchaseForm">
+    <form method="post" id="purchaseForm" onsubmit="return showPurchaseAlert()">
         {% csrf_token %}
         <label for="item">Select Item:</label>
         <select name="item_id" id="item" onchange="updateTotal()">
@@ -30,9 +30,6 @@
         <button type="submit">Purchase</button>
     </form>
 
-    <p>Total Price: <span id="total_price">0</span></p>
-    <p>Total Points Earned: <span id="total_points_earned">0</span></p>
-
     <h3>Available Loyalty Points for Redemption</h3>
     <ul>
         {% for point in loyalty_points %}
@@ -52,14 +49,24 @@ function updateTotal() {
 
     const selectedItem = itemSelect.options[itemSelect.selectedIndex];
     const itemPrice = parseFloat(selectedItem.getAttribute('data-price'));
-    const itemPoints = parseInt(selectedItem.getAttribute('data-points'));
-    const quantity = parseInt(quantityInput.value);
+    const itemPoints = parseInt(selectedItem.getAttribute('data-points'), 10);
+    const quantity = parseInt(quantityInput.value, 10);
 
     const totalPrice = itemPrice * quantity;
     const totalPoints = itemPoints * quantity;
 
     totalPriceElement.textContent = totalPrice.toFixed(2);
     totalPointsElement.textContent = totalPoints;
+}
+
+function showPurchaseAlert() {
+    const totalPrice = document.getElementById('total_price').textContent;
+    const totalPoints = document.getElementById('total_points_earned').textContent;
+
+    alert(`Total Price: $${totalPrice}\nTotal Points Earned: ${totalPoints}`);
+    
+    // Return false to prevent the form from submitting immediately
+    return false;
 }
 
 // Initial calculation
