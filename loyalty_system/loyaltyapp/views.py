@@ -26,6 +26,15 @@ def generate_bill_no(length=5):
 
 bill_no = generate_bill_no()
 
+def calculate_status(activation_date, expiration_date):
+    now = timezone.now().date()
+    if now < activation_date:
+        return 'pending'
+    elif now > expiration_date:
+        return 'expired'
+    else:
+        return 'active'
+
 def purchase_view(request, shop_id):
     shop = get_object_or_404(Shop, id=shop_id)
     customer = request.user.customerprofile
@@ -59,9 +68,9 @@ def purchase_view(request, shop_id):
             total_points_earned=total_points_earned,
             date=timezone.now(),
             bill_no=bill_no,
-            bill_amount=total_price,
+            bill_amount=bill_amount,
             expiration_date=expiration_date,
-            
+            points_redeemed=redeem_points,
         )
 
         # Update customer points
@@ -83,6 +92,8 @@ def purchase_view(request, shop_id):
             transaction_type='Purchase'
         )
 
+        status = calculate_status(activation_date, expiration_date)
+
         # Create LoyaltyPoint entry
         LoyaltyPoint.objects.create(
             customer=customer,
@@ -91,7 +102,7 @@ def purchase_view(request, shop_id):
             date_earned=timezone.now(),
             activation_date=activation_date,
             expiration_date=expiration_date,
-            status='active'
+            status=status
         )
 
         return redirect('/')

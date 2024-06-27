@@ -10,7 +10,7 @@
         <select name="item_id" id="item" onchange="updateTotal()">
             {% for item in items %}
                 <option value="{{ item.id }}" data-price="{{ item.price }}" data-points="{{ item.loyalty_points }}">
-                    {{ item.name }} - {{ item.price }} - {{ item.loyalty_points }} points
+                    {{ item.name }} - ${{ item.price }} - {{ item.loyalty_points }} points
                 </option>
             {% endfor %}
         </select>
@@ -18,19 +18,18 @@
         <label for="quantity">Quantity:</label>
         <input type="number" name="quantity" id="quantity" value="1" min="1" onchange="updateTotal()">
         <br>
-        <label for="redeem_points">Redeem Points (Available: {{ customer.active_points }}):</label>
+        <label for="redeem_points">Redeemable Points (Available: {{ customer.active_points }}):</label>
         <input type="number" name="redeem_points" id="redeem_points" value="0" max="{{ customer.active_points }}">
         <br>
         <label for="activation_date">Points Activation Date:</label>
-        <input type="date" name="activation_date" id="activation_date">
-        <br>
+        <input required type="date" name="activation_date" id="activation_date">
         <br>
         <label for="expiration_date">Points Expiration Date:</label>
-        <input type="date" name="expiration_date" id="expiration_date">
+        <input required type="date" name="expiration_date" id="expiration_date">
         <br>
-        <!-- <label for="merchant_id">Merchant ID:</label>
-        <input type="number" name="merchant_id" id="merchant_id"> -->
-        <br>
+        <h3>Total Price: $<span id="total_price">0.00</span></h3>
+        <h3>Total Points Earned: <span id="total_points_earned">0</span></h3>
+        <button type="button" onclick="displayTotal()">Calculate Total</button>
         <button type="submit">Purchase</button>
     </form>
 
@@ -57,11 +56,12 @@
             {% endfor %}
         </tbody>
     </table>
-    
 {% endblock %}
 
+{% block extra_js %}
 <script>
 function updateTotal() {
+    console.log('updateTotal called');
     const itemSelect = document.getElementById('item');
     const quantityInput = document.getElementById('quantity');
     const totalPriceElement = document.getElementById('total_price');
@@ -79,16 +79,20 @@ function updateTotal() {
     totalPointsElement.textContent = totalPoints;
 }
 
-function showPurchaseAlert() {
+function displayTotal() {
+    updateTotal();
     const totalPrice = document.getElementById('total_price').textContent;
     const totalPoints = document.getElementById('total_points_earned').textContent;
-
     alert(`Total Price: $${totalPrice}\nTotal Points Earned: ${totalPoints}`);
-    
-    // Return false to prevent the form from submitting immediately
-    return false;
 }
 
-// Initial calculation
-updateTotal();
+function showPurchaseAlert() {
+    displayTotal();
+    return true;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateTotal();
+});
 </script>
+{% endblock %}
