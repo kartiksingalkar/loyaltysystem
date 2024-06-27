@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Loyalty System{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <div style="float: right;">
+            {% if user.is_authenticated %}
+                <p>Welcome, {{ user.username }}!</p>
+                <p>Available Points: {{ user.customerprofile.points_balance }}</p>
+                <a href="{% url 'login' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+            {% endif %}
+        </div>
+        <h1>{% block header %}Loyalty System{% endblock %}</h1>
+    </header>
+    
+    <nav>
+        <h2>Shops</h2>
+        <ul>
+            {% for shop in shops %}
+                <li><a href="{% url 'purchase_view' shop.id %}">{{ shop.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </nav>
+    
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

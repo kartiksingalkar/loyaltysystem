@@ -1,0 +1,16 @@
+{% extends 'loyalty/base.html' %}
+
+{% block title %}{{ shop.name }}{% endblock %}
+
+{% block content %}
+    <h2>{{ shop.name }}</h2>
+    <ul>
+        {% for item in items %}
+            <li>
+                {{ item.name }} - {{ item.price }} - {{ item.loyalty_points }} points
+                <button>Add to Cart</button>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
