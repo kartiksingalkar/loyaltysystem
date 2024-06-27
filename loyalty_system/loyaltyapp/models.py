@@ -96,17 +96,8 @@ class Purchase(models.Model):
     points_redeemed = models.IntegerField(default=0)
     expiration_date = models.DateField()
     bill_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    # price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     # merchant = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='merchant_transactions')
 
     def __str__(self):
         return f"{self.customer.user.username} - {self.total_points_earned} points earned"
-
-class PurchaseItem(models.Model):
-    purchase = models.ForeignKey(Purchase, related_name='items', on_delete=models.CASCADE)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    quantity = models.IntegerField(default=1)
-    points_earned = models.IntegerField(default=0)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f"{self.purchase.customer.user.username} - {self.item.name} - {self.quantity} - {self.points_earned} points"

@@ -21,7 +21,11 @@
         <label for="redeem_points">Redeem Points (Available: {{ customer.active_points }}):</label>
         <input type="number" name="redeem_points" id="redeem_points" value="0" max="{{ customer.active_points }}">
         <br>
-        <label for="expiration_date">Expiration Date:</label>
+        <label for="activation_date">Points Activation Date:</label>
+        <input type="date" name="activation_date" id="activation_date">
+        <br>
+        <br>
+        <label for="expiration_date">Points Expiration Date:</label>
         <input type="date" name="expiration_date" id="expiration_date">
         <br>
         <!-- <label for="merchant_id">Merchant ID:</label>
@@ -31,13 +35,29 @@
     </form>
 
     <h3>Available Loyalty Points for Redemption</h3>
-    <ul>
-        {% for point in loyalty_points %}
-            <li>
-                {{ point.points }} points from {{ point.shop.name }} ({{ point.date_earned }}) - Status: {{ point.status }}
-            </li>
-        {% endfor %}
-    </ul>
+    <table>
+        <thead>
+            <tr>
+                <th>Points</th>
+                <th>Shop</th>
+                <th>Date Earned</th>
+                <th>Expiration Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for point in loyalty_points %}
+            <tr>
+                <td>{{ point.points }}</td>
+                <td>{{ point.shop.name }}</td>
+                <td>{{ point.date_earned }}</td>
+                <td>{{ point.expiration_date }}</td>
+                <td>{{ point.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
 {% endblock %}
 
 <script>

@@ -4,9 +4,10 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.shortcuts import render, redirect
-from .models import Shop, Item, CustomerProfile, Purchase, PurchaseItem, LoyaltyPoint, PointTransaction
+from .models import Shop, Item, CustomerProfile, Purchase, LoyaltyPoint, PointTransaction
 from django.utils import timezone
-from datetime import timedelta
+import secrets
+import string
 
 # Create your views here.
 
@@ -20,6 +21,10 @@ def shop_items_view(request, shop_id):
     items = Item.objects.filter(shop=shop)
     return render(request, 'loyalty/shop_items.html', {'shop': shop, 'items': items})
 
+def generate_bill_no(length=5):
+    return ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(length))
+
+bill_no = generate_bill_no()
 
 def purchase_view(request, shop_id):
     shop = get_object_or_404(Shop, id=shop_id)
@@ -29,6 +34,7 @@ def purchase_view(request, shop_id):
         item_id = request.POST['item_id']
         quantity = int(request.POST['quantity'])
         redeem_points = int(request.POST['redeem_points'])
+        activation_date = request.POST['activation_date']
         expiration_date = request.POST['expiration_date']
         # merchant_id = request.POST['merchant_id']
         item = get_object_or_404(Item, id=item_id)
@@ -52,7 +58,7 @@ def purchase_view(request, shop_id):
             total_price=total_price - redeem_points,
             total_points_earned=total_points_earned,
             date=timezone.now(),
-            bill_no='BILL123',
+            bill_no=bill_no,
             bill_amount=total_price,
             expiration_date=expiration_date,
             
@@ -83,7 +89,7 @@ def purchase_view(request, shop_id):
             shop=shop,
             points=total_points_earned,
             date_earned=timezone.now(),
-            activation_date=timezone.now(),
+            activation_date=activation_date,
             expiration_date=expiration_date,
             status='active'
         )
