@@ -18,8 +18,8 @@
         <label for="quantity">Quantity:</label>
         <input type="number" name="quantity" id="quantity" value="1" min="1" onchange="updateTotal()">
         <br>
-        <label for="redeem_points">Redeemable Points (Available: {{ customer.active_points }}):</label>
-        <input type="number" name="redeem_points" id="redeem_points" value="0" max="{{ customer.active_points }}">
+        <label for="redeem_points">Redeemable Points (Available: {{ total_redeemable_points }}):</label>
+        <input type="number" name="redeem_points" id="redeem_points" value="0" max="{{ total_redeemable_points }}">
         <br>
         <label for="activation_date">Points Activation Date:</label>
         <input required type="date" name="activation_date" id="activation_date">

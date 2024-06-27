@@ -8,6 +8,7 @@ from .models import Shop, Item, CustomerProfile, Purchase, LoyaltyPoint, PointTr
 from django.utils import timezone
 import secrets
 import string
+from datetime import datetime, date
 
 # Create your views here.
 
@@ -34,6 +35,39 @@ def calculate_status(activation_date, expiration_date):
         return 'expired'
     else:
         return 'active'
+    
+def redeem_loyalty_points(customer, points_to_redeem):
+    # Get active loyalty points sorted by expiration date
+    active_points = LoyaltyPoint.objects.filter(customer=customer, status='active').order_by('expiration_date')
+    redeemed_points_detail = []
+
+    remaining_points_to_redeem = points_to_redeem
+
+    for point in active_points:
+        if remaining_points_to_redeem <= 0:
+            break
+
+        if point.points - point.redeemed_points > 0:
+            points_available = point.points - point.redeemed_points
+
+            if points_available >= remaining_points_to_redeem:
+                point.redeemed_points += remaining_points_to_redeem
+                redeemed_points_detail.append({
+                    'point_id': point.id,
+                    'points_redeemed': remaining_points_to_redeem
+                })
+                remaining_points_to_redeem = 0
+            else:
+                point.redeemed_points += points_available
+                redeemed_points_detail.append({
+                    'point_id': point.id,
+                    'points_redeemed': points_available
+                })
+                remaining_points_to_redeem -= points_available
+
+            point.save()
+
+    return redeemed_points_detail
 
 def purchase_view(request, shop_id):
     shop = get_object_or_404(Shop, id=shop_id)
@@ -50,11 +84,14 @@ def purchase_view(request, shop_id):
         total_price = item.price * quantity
         total_points_earned = item.loyalty_points * quantity
         
+        redeemed_points_detail = redeem_loyalty_points(customer, redeem_points)
+        total_redeemed_points = sum(detail['points_redeemed'] for detail in redeemed_points_detail)
+
         # Check and apply redeemable points
-        if redeem_points > customer.active_points:
-            redeem_points = customer.active_points
-        customer.active_points -= redeem_points
-        customer.points_balance -= redeem_points
+        # if redeem_points > customer.active_points:
+        #     redeem_points = customer.active_points
+        # customer.active_points -= redeem_points
+        # customer.points_balance -= redeem_points
 
         bill_amount = total_price - redeem_points
 
@@ -70,12 +107,12 @@ def purchase_view(request, shop_id):
             bill_no=bill_no,
             bill_amount=bill_amount,
             expiration_date=expiration_date,
-            points_redeemed=redeem_points,
+            points_redeemed=total_redeemed_points,
         )
 
         # Update customer points
-        customer.points_balance += total_points_earned
-        customer.active_points += total_points_earned
+        customer.points_balance += total_points_earned - total_redeemed_points
+        customer.active_points += total_points_earned - total_redeemed_points
         customer.save()
 
         # Log point transaction
@@ -85,7 +122,7 @@ def purchase_view(request, shop_id):
             bill_no=purchase.bill_no,
             # items_received=f"{quantity} x {item.name}",
             points_earned=total_points_earned,
-            points_redeemed=redeem_points,
+            points_redeemed=total_redeemed_points,
             date=timezone.now(),
             expiration_date=expiration_date,
             # merchant_id=merchant_id,
@@ -108,9 +145,20 @@ def purchase_view(request, shop_id):
         return redirect('/')
 
     items = Item.objects.filter(shop=shop)
-    loyalty_points = LoyaltyPoint.objects.filter(customer=customer, status='active')
-    return render(request, 'loyalty/purchase.html', {'shop': shop, 'items': items, 'customer': customer, 'loyalty_points': loyalty_points})
+    for point in LoyaltyPoint.objects.filter(customer=customer):
+        point.status = calculate_status(point.activation_date.date(), point.expiration_date.date())
+        point.save()
 
+    loyalty_points = LoyaltyPoint.objects.filter(customer=customer, status='active')
+    total_redeemable_points = sum(point.points - point.redeemed_points for point in loyalty_points)
+
+    return render(request, 'loyalty/purchase.html', {
+        'shop': shop,
+        'items': items,
+        'customer': customer,
+        'loyalty_points': loyalty_points,
+        'total_redeemable_points': total_redeemable_points,
+    })
 
 
 def login_view(request):
