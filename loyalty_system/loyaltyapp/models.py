@@ -73,17 +73,6 @@ class PointTransaction(models.Model):
     def __str__(self):
         return f"{self.customer.user.username} - {self.transaction_type} - {self.points_earned if self.transaction_type == 'EARN' else self.points_redeemed} points"
 
-class Redemption(models.Model):
-    customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
-    points_used = models.IntegerField()
-    date = models.DateTimeField(auto_now_add=True)
-    details = models.TextField()
-    points_detail = models.JSONField()
-
-    def __str__(self):
-        return f"{self.customer.user.username} - {self.points_used} points redeemed"
-
-
 class Purchase(models.Model):
     customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
